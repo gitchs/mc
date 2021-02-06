@@ -31,6 +31,10 @@ var (
 			Name:  "recursive, r",
 			Usage: "share all objects recursively",
 		},
+		cli.BoolFlag{
+			Name:  "aria2",
+			Usage: "generate aria2 output format",
+		},
 		cli.StringFlag{
 			Name:  "version-id, vid",
 			Usage: "share a particular object version",
@@ -114,7 +118,7 @@ func checkShareDownloadSyntax(ctx context.Context, cliCtx *cli.Context, encKeyDB
 }
 
 // doShareURL share files from target.
-func doShareDownloadURL(ctx context.Context, targetURL, versionID string, isRecursive bool, expiry time.Duration) *probe.Error {
+func doShareDownloadURL(ctx context.Context, targetURL, versionID string, isRecursive, isAria2 bool, expiry time.Duration) *probe.Error {
 	targetAlias, targetURLFull, _, err := expandAlias(targetURL)
 	if err != nil {
 		return err.Trace(targetURL)
@@ -193,6 +197,7 @@ func doShareDownloadURL(ctx context.Context, targetURL, versionID string, isRecu
 			ShareURL:    shareURL,
 			TimeLeft:    expiry,
 			ContentType: contentType,
+			IsAria2:     isAria2,
 		})
 	}
 
@@ -220,6 +225,7 @@ func mainShareDownload(cliCtx *cli.Context) error {
 
 	// Set command flags from context.
 	isRecursive := cliCtx.Bool("recursive")
+	isAria2 := cliCtx.Bool("aria2")
 	versionID := cliCtx.String("version-id")
 	expiry := shareDefaultExpiry
 	if cliCtx.String("expire") != "" {
@@ -229,7 +235,7 @@ func mainShareDownload(cliCtx *cli.Context) error {
 	}
 
 	for _, targetURL := range cliCtx.Args() {
-		err := doShareDownloadURL(ctx, targetURL, versionID, isRecursive, expiry)
+		err := doShareDownloadURL(ctx, targetURL, versionID, isRecursive, isAria2, expiry)
 		if err != nil {
 			switch err.ToGoError().(type) {
 			case APINotImplemented:

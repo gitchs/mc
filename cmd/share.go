@@ -56,10 +56,15 @@ type shareMesssage struct {
 	ShareURL    string        `json:"share"`
 	TimeLeft    time.Duration `json:"timeLeft"`
 	ContentType string        `json:"contentType,omitempty"` // Only used by upload cmd.
+	IsAria2     bool          `json:"_"`
 }
 
 // String - Themefied string message for console printing.
 func (s shareMesssage) String() string {
+	if s.IsAria2 {
+		msg := fmt.Sprintf("%s\n  continue=true", s.ShareURL)
+		return msg
+	}
 	msg := console.Colorize("URL", fmt.Sprintf("URL: %s\n", s.ObjectURL))
 	msg += console.Colorize("Expire", fmt.Sprintf("Expire: %s\n", timeDurationToHumanizedDuration(s.TimeLeft)))
 	if s.ContentType != "" {
